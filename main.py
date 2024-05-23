@@ -33,41 +33,53 @@ def task(robot):
             time.sleep(1)
             counter += 1
             if counter >= 5:
-                print("Nothing to do.")
                 return f"{robot.name} completed the task"
             
 def main():
-    # Input the required no of production and the capacity of a contaniner
 
-    total_production = int(input("Enter the number of items to produce:\n"))
-    container_capacity = int(input("Enter the capacity of the container:\n"))
-    required_no_of_container = math.ceil(total_production/container_capacity)
-    print(f"{required_no_of_container} container will be required.")
 
-    # Classes initialization
+    try:
+        # Input the required no of production and the capacity of a contaniner
 
-    production = Production()
-    container = Container(container_capacity)
-    robot1 = Robot("Robot1", production, container)
-    robot2 = Robot("Robot2", production, container)
+        total_production = int(input("Enter the number of items to produce:\n"))
+        if total_production <= 0:
+            raise ValueError("The number of items to produce must be greater than 0.")
+        container_capacity = int(input("Enter the capacity of the container:\n"))
+        if container_capacity <= 0:
+            raise ValueError("The capacity of the container must be greater than 0.")
+        required_no_of_container = math.ceil(total_production/container_capacity)
+        print(f"{required_no_of_container} container will be required.")
 
-    # Use ThreadPoolExecutor to manage the threads
+        # Classes initialization
 
-    with ThreadPoolExecutor(max_workers=3) as executor:
-        futures = []
-        futures.append(executor.submit(Stocking, total_production, production))
-        futures.append(executor.submit(task, robot1))
-        futures.append(executor.submit(task, robot2))
+        production = Production()
+        container = Container(container_capacity)
+        robot1 = Robot("Robot1", production, container)
+        robot2 = Robot("Robot2", production, container)
 
-        for future in as_completed(futures):
-            print(future.result())
+        # Use ThreadPoolExecutor to manage the threads
 
-    # Printing final status
-    print("Production completed.")
-    print(f"Total produced: {production.total_produced}")
-    print(f"Robot1 handled: Item picked: {robot1.items_picked}, Items transferred:{robot1.items_transferred}")
-    print(f"Robot2 handled: Item picked: {robot2.items_picked}, Items transferred: {robot2.items_transferred}")
-    print(f"Container used: {container.container_number}")
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            futures = []
+            futures.append(executor.submit(Stocking, total_production, production))
+            futures.append(executor.submit(task, robot1))
+            futures.append(executor.submit(task, robot2))
+
+            for future in as_completed(futures):
+                print(future.result())
+
+        # Printing final status
+        print("Production completed.")
+        print(f"Total produced: {production.total_produced}")
+        print(f"Robot1 handled: Item picked: {robot1.items_picked}, Items transferred:{robot1.items_transferred}")
+        print(f"Robot2 handled: Item picked: {robot2.items_picked}, Items transferred: {robot2.items_transferred}")
+        print(f"Container used: {container.container_number}")
+    
+    except ValueError as ve:
+        print(f"Inpur error: {ve}")
+
+    except Exception as e:
+        print(f"An unexpected error occured: {e}")
 
 
 if __name__ == "__main__":
